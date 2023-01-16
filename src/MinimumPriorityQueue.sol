@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 import "./IMinimumPriorityQueue.sol";
-import "forge-std/console.sol";
 
 contract MinimumPriorityQueue is IMinimumPriorityQueue {
     uint256[] internal _heap;
@@ -58,21 +57,13 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
         uint256[] memory originalHeapContents = new uint[](maxHeapIndexCount);
         uint256[] memory modifiedHeapContents = new uint[](maxHeapIndexCount);
 
-        // console.log("%s %i", "maxHeapIndexCount: ", maxHeapIndexCount);
-        // console.log();
         {
             uint256 i = heapIndex;
             uint256 j;
             while (i >= 1) {
                 heapIndexes[j] = i;
-                // console.log("%s %i %s", "heapIndexes[", j, "]");
-                // console.log("%s %i", "=", i);
-                // console.log();
                 modifiedHeapContents[j] = _heap[i]; // SLOAD here
                 originalHeapContents[j] = modifiedHeapContents[j];
-                // console.log("%s %i %s", "modifiedHeapContents, originalHeapContents[", j, "]");
-                // console.log("%s %i", "=", modifiedHeapContents[j]);
-                // console.log();
                 i >>= 1; // Bitwise operation for /= 2
                 j += 1;
             }
@@ -83,13 +74,6 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
             while (j + 1 < maxHeapIndexCount && _compare(modifiedHeapContents[j + 1], modifiedHeapContents[j]) == false) {
                 // Does this work to swap the in-memory array indexes?
                 (modifiedHeapContents[j + 1], modifiedHeapContents[j]) = (modifiedHeapContents[j], modifiedHeapContents[j + 1]);
-
-                // console.log("%s %i %s", "modifiedHeapContents[", j, "]");
-                // console.log("%s %i", "=", modifiedHeapContents[j]);
-                // console.log();
-                // console.log("%s %i %s", "modifiedHeapContents[", j + 1, "]");
-                // console.log("%s %i", "=", modifiedHeapContents[j + 1]);
-                // console.log();
 
                 j++;
             }
@@ -117,9 +101,6 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
             }
         }
 
-        // console.log("%s %i", "sink maxHeapIndexCount: ", maxHeapIndexCount);
-        // console.log();
-
         // Obtain relevant heap indexes
         uint256[] memory heapIndexes = new uint[](maxHeapIndexCount);
         uint256[] memory originalHeapContents = new uint[](maxHeapIndexCount);
@@ -132,13 +113,6 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
             heapIndexes[j] = i;
             modifiedHeapContents[j] = _heap[i]; // SLOAD here
             originalHeapContents[j] = modifiedHeapContents[j];
-
-            // console.log("%s %i %s", "heapIndexes[", j, "]");
-            // console.log("%s %i", "=", i);
-            // console.log();
-            // console.log("%s %i %s", "modifiedHeapContents, originalHeapContents[", j, "]");
-            // console.log("%s %i", "=", modifiedHeapContents[j]);
-            // console.log();
 
             while (i << 1 <= heapSize) {
                 uint256 k = i << 1;
@@ -156,8 +130,6 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
 
                 // If current_node <= _child, no need to swim further.
                 if (_compare(modifiedHeapContents[0], heap_k) == true) {
-                    // console.log("%s", "BREAK");
-                    // console.log("%s %i", "heap_k", heap_k);
                     break;
                 }
     
@@ -167,13 +139,6 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
                 heapIndexes[j] = i;
                 modifiedHeapContents[j] = heap_k;
                 originalHeapContents[j] = heap_k;
-
-                // console.log("%s %i %s", "heapIndexes[", j, "]");
-                // console.log("%s %i", "=", i);
-                // console.log();
-                // console.log("%s %i %s", "modifiedHeapContents, originalHeapContents[", j, "]");
-                // console.log("%s %i", "=", modifiedHeapContents[j]);
-                // console.log();
             }
         }
 
@@ -183,14 +148,6 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
             while (j + 1 < maxHeapIndexCount && modifiedHeapContents[j + 1] != 0 && _compare(modifiedHeapContents[j + 1], modifiedHeapContents[j]) == true) {
                 // Does this work to swap the in-memory array indexes?
                 (modifiedHeapContents[j + 1], modifiedHeapContents[j]) = (modifiedHeapContents[j], modifiedHeapContents[j + 1]);
-
-                // console.log("%s %i %s", "modifiedHeapContents[", j, "]");
-                // console.log("%s %i", "=", modifiedHeapContents[j]);
-                // console.log();
-                // console.log("%s %i %s", "modifiedHeapContents[", j + 1, "]");
-                // console.log("%s %i", "=", modifiedHeapContents[j + 1]);
-                // console.log();
-
                 j++;
             }
         }
