@@ -10,15 +10,6 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
         _heap.push(0); // Initialize heap.
     }
 
-    // Internal view functions
-    function _isEmpty() internal view returns (bool) {
-        return _size() == 0;
-    }
-
-    function _size() internal view returns (uint256) {
-        return _heap.length - 1;
-    }
-
     // External view functions
     function size() external view override returns (uint256) {
         return _size();
@@ -37,6 +28,31 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
         return _heap[1];
     }
 
+    // External mutator functions
+    function insert(uint256 _key) override external {
+        if (_key == 0) revert CannotInsert0();
+        _heap.push(_key);
+        _swim(_size());
+    }
+
+    function deleteMinimum() override external returns(uint256 min) {
+        if (_isEmpty()) revert EmptyPriorityQueue();
+        min = _heap[1];
+        _heap[1] = _heap[_size()];
+        _heap.pop();
+        if (_isEmpty()) return min;
+        _sink(1);
+    }
+
+    // Internal view functions
+    function _isEmpty() internal view returns (bool) {
+        return _size() == 0;
+    }
+
+    function _size() internal view returns (uint256) {
+        return _heap.length - 1;
+    }
+
     // Internal mutator functions
 
     // Get the new sorted heap in memory first, then only write to storage once finalised
@@ -48,7 +64,7 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
         {
             uint256 i = heapIndex;
             while (i > 1) {
-                maxHeapIndexCount += 1;
+                unchecked {++maxHeapIndexCount;}
                 i >>= 1; // Bitwise operation for /= 2
             }
         }
@@ -65,17 +81,15 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
                 modifiedHeapContents[j] = _heap[i]; // SLOAD here
                 originalHeapContents[j] = modifiedHeapContents[j];
                 i >>= 1; // Bitwise operation for /= 2
-                j += 1;
+                unchecked {++j;}
             }
         }
         // Perform swim on modifiedHeapContents
         {
             uint256 j;
             while (j + 1 < maxHeapIndexCount && _compare(modifiedHeapContents[j + 1], modifiedHeapContents[j]) == false) {
-                // Does this work to swap the in-memory array indexes?
                 (modifiedHeapContents[j + 1], modifiedHeapContents[j]) = (modifiedHeapContents[j], modifiedHeapContents[j + 1]);
-
-                j++;
+                unchecked{++j;}
             }
         }
 
@@ -96,7 +110,7 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
         {
             uint256 i = heapIndex;
             while (i << 1 <= heapSize) {
-                maxHeapIndexCount += 1;
+                unchecked {++maxHeapIndexCount;}
                 i <<= 1;
             }
         }
@@ -123,7 +137,7 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
                     uint256 heap_kPlus1 = _heap[k + 1]; // SLOAD 2
                     // If left child < right child, choose left child
                     if (_compare(heap_k, heap_kPlus1) == false) {
-                        k++;
+                        unchecked {++k;}
                         heap_k = heap_kPlus1;
                     }
                 }
@@ -135,7 +149,7 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
     
                 // Copy into memory arrays
                 i = k;
-                j += 1;
+                unchecked {++j;}
                 heapIndexes[j] = i;
                 modifiedHeapContents[j] = heap_k;
                 originalHeapContents[j] = heap_k;
@@ -148,7 +162,7 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
             while (j + 1 < maxHeapIndexCount && modifiedHeapContents[j + 1] != 0 && _compare(modifiedHeapContents[j + 1], modifiedHeapContents[j]) == true) {
                 // Does this work to swap the in-memory array indexes?
                 (modifiedHeapContents[j + 1], modifiedHeapContents[j]) = (modifiedHeapContents[j], modifiedHeapContents[j + 1]);
-                j++;
+                unchecked {++j;}
             }
         }
 
@@ -163,22 +177,5 @@ contract MinimumPriorityQueue is IMinimumPriorityQueue {
     function _compare(uint256 a, uint256 b) internal pure returns (bool) {
         if (a < b) return true;
         else return false;
-    }
-
-    // External mutator functions
-    function insert(uint256 _key) override external {
-        if (_key == 0) revert CannotInsert0();
-        _heap.push(_key);
-        _swim(_size());
-    }
-
-    function deleteMinimum() override external returns(uint256 min) {
-        if (_isEmpty()) revert EmptyPriorityQueue();
-        // Is this copy by value into memory, or by reference from storage
-        min = _heap[1];
-        _heap[1] = _heap[_size()];
-        _heap.pop();
-        if (_isEmpty()) return min;
-        _sink(1);
     }
 }
