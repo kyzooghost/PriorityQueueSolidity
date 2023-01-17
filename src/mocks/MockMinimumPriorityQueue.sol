@@ -4,8 +4,8 @@ pragma solidity ^0.8.13;
 import "../lib/MinimumPriorityQueue.sol";
 
 contract MockMinimumPriorityQueue {
-    using MinimumPriorityQueue for MinimumPriorityQueue.Queue;
-    MinimumPriorityQueue.Queue _queue;
+    using MinimumPriorityQueue for MinimumPriorityQueue.PriorityQueue;
+    MinimumPriorityQueue.PriorityQueue _queue;
 
     function insert(uint256 _key) external {
         _queue.insert(_key);

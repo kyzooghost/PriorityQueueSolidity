@@ -14,6 +14,32 @@ contract MockMinimumPriorityQueueTest is Test {
     }
 
     /*
+     * UNIT TESTS
+     */
+
+    function testUnit_VariablesAtSetUp() public {
+        assertEq(queue.isEmpty(), true);
+        assertEq(queue.size(), 0);
+    }
+
+    function testUnit_insert_SingleInsert() public {
+        queue.insert(1);
+        assertEq(queue.isEmpty(), false);
+        assertEq(queue.size(), 1);
+        assertEq(queue.minimum(), 1);
+    }
+
+    function testUnit_deleteMinimum_ShouldRevertWhenHeapEmpty() public {
+        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
+        queue.deleteMinimum();
+    }
+
+    function testUnit_minimum_ShouldRevertWhenHeapEmpty() public {
+        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
+        queue.minimum();
+    }
+
+    /*
      * INTEGRATION TESTS
      */
 
@@ -52,19 +78,19 @@ contract MockMinimumPriorityQueueTest is Test {
         queue.minimum();
     }
 
-    // function testIntegration_NItemsTest() public {
+    function testIntegration_NItemsTest() public {
 
-    //     uint256 n = 1000;
+        uint256 n = 10000;
 
-    //     for (uint256 i = n; i > 0; i--) {
-    //         queue.insert(i);
-    //     }
+        for (uint256 i = n; i > 0; i--) {
+            queue.insert(i);
+        }
 
-    //     for (uint256 i = n; i > 0; i--) {
-    //         assertEq(queue.deleteMinimum(), n + 1 - i);
-    //     }
+        for (uint256 i = n; i > 0; i--) {
+            assertEq(queue.deleteMinimum(), n + 1 - i);
+        }
 
-    // }
+    }
 
     /*
      * FUZZING TESTS

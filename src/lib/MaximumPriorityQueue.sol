@@ -1,62 +1,64 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-import "forge-std/console.sol";
-
-library MinimumPriorityQueueMapping {
+library MaximumPriorityQueue {
     error EmptyPriorityQueue();
     error CannotInsert0();
 
-    struct Queue {
+    struct PriorityQueue {
         uint256 _size;
+        // TODO - Determine gas saving for dynamic array for packable value type (i.e. uint40 for time)
         mapping(uint256 => uint256) _heap;
     }
 
     // External view functions
-    function size(Queue storage self) internal view returns (uint256) {
+    function size(PriorityQueue storage self) internal view returns (uint256) {
         return self._size;
     }
 
-    function heap(Queue storage self) internal view returns (uint256[] memory) {
-        uint256[] memory heapIndexes = new uint[](self._size);
-        for (uint256 i; i < self._size;) {
+    function heap(PriorityQueue storage self) internal view returns (uint256[] memory) {
+        uint256 currentSize = size(self);
+        uint256[] memory heapIndexes = new uint[](currentSize);
+        for (uint256 i; i < currentSize;) {
             heapIndexes[i] = self._heap[i + 1];
             unchecked{++i;}
         }
         return heapIndexes;
     }    
 
-    function isEmpty(Queue storage self) internal view returns (bool) {
+    function isEmpty(PriorityQueue storage self) internal view returns (bool) {
         return self._size == 0;
     }
 
-    function minimum(Queue storage self) internal view returns (uint256) {
+    function maximum(PriorityQueue storage self) internal view returns (uint256) {
         if (isEmpty(self)) revert EmptyPriorityQueue();
         return self._heap[1];
     }
 
     // External mutator functions
-    function insert(Queue storage self, uint256 _key) internal {
+    function insert(PriorityQueue storage self, uint256 _key) internal {
         if (_key == 0) revert CannotInsert0();
-        uint256 newSize = ++self._size;
+        unchecked{++self._size;}
+        uint256 newSize = self._size;
         self._heap[newSize] = _key;
         _swim(self, newSize);
     }
 
-    function deleteMinimum(Queue storage self) internal returns(uint256 min) {
+    function deleteMaximum(PriorityQueue storage self) internal returns(uint256 max) {
         if (isEmpty(self)) revert EmptyPriorityQueue();
         // Is this copy by value into memory, or by reference from storage
-        min = self._heap[1];
-        uint256 newSize = --self._size;
+        max = self._heap[1];
+        unchecked{--self._size;}
+        uint256 newSize = self._size;
         self._heap[1] = self._heap[newSize + 1];
         self._heap[newSize + 1] = 0;
-        if (newSize == 0) return min;
+        if (newSize == 0) return max;
         _sink(self, 1);
     }
 
     // Internal utility functions
 
-    function _swim(Queue storage self, uint256 heapIndex) private {
+    function _swim(PriorityQueue storage self, uint256 heapIndex) private {
         // Perform operations in memory (cheaper) before saving result in storage. Perform minimum operations in storage.
 
         // Obtain max # of heap indexes we will interact with in _swim operation
@@ -103,7 +105,7 @@ library MinimumPriorityQueueMapping {
         }
     }
 
-    function _sink(Queue storage self, uint256 heapIndex) private {
+    function _sink(PriorityQueue storage self, uint256 heapIndex) private {
         // Obtain max # of heap indexes we will interact with in _swim operation
         uint256 maxHeapIndexCount = 1;
         uint256 heapSize = size(self); // Save _size to memory, to minimize SLOAD for _size
@@ -177,8 +179,8 @@ library MinimumPriorityQueueMapping {
         }
     }
 
-    function _compare(uint256 a, uint256 b) internal pure returns (bool) {
-        if (a < b) return true;
+    function _compare(uint256 a, uint256 b) private pure returns (bool) {
+        if (a > b) return true;
         else return false;
     }
 }
