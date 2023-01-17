@@ -57,6 +57,7 @@ library MinimumPriorityQueue {
     }
 
     // Internal utility functions
+    // Source material for swim and sink operations - https://algs4.cs.princeton.edu/24pq/
 
     function _swim(PriorityQueue storage self, uint256 heapIndex) private {
         // Perform operations in memory (cheaper) before saving result in storage. Perform minimum operations in storage.

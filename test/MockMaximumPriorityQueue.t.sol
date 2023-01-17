@@ -80,7 +80,7 @@ contract MockMaximumPriorityQueueTest is Test {
 
     function testIntegration_NItemsTest() public {
 
-        uint256 n = 10000;
+        uint256 n = 100000;
 
         for (uint256 i = 1; i < n + 1; i++) {
             queue.insert(i);
