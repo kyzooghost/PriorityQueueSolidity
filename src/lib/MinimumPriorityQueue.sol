@@ -1,35 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-library PriorityQueue {
+library MinimumPriorityQueue {
     error EmptyPriorityQueue();
     error CannotInsert0();
     error NotInitialized();
-    error DidNotProvideOrientation();
     error AlreadyInitialized();
 
-    enum Orientation {
-        NotInitialized,
-        Minimum,
-        Maximum
-    }
-
     struct Queue {
-        Orientation _orientation;
         uint256[] _heap;
-    }
-
-    function initialize(Queue storage self, Orientation orientation_) internal {
-        if (_isInitialized(self) == true) {
-            revert AlreadyInitialized();
-        }
-
-        if (orientation_ == Orientation.NotInitialized) {
-                revert DidNotProvideOrientation();
-        }
-
-        self._heap.push(0);
-        self._orientation = orientation_;
     }
 
     // External view functions
@@ -50,12 +29,9 @@ library PriorityQueue {
         return self._heap[1];
     }
 
-    function orientation(Queue storage self) internal view returns (Orientation) {
-        return self._orientation;
-    }
-
     // External mutator functions
     function insert(Queue storage self, uint256 _key) internal {
+        _checkInitialize(self);
         if (_key == 0) revert CannotInsert0();
         self._heap.push(_key);
         _swim(self, _size(self));
@@ -73,10 +49,6 @@ library PriorityQueue {
 
     // Internal view functions
 
-    function _isInitialized(Queue storage self) internal view returns (bool) {
-        return self._orientation != Orientation.NotInitialized;
-    }
-
     function _isEmpty(Queue storage self) internal view returns (bool) {
         return _size(self) == 0;
     }
@@ -87,24 +59,9 @@ library PriorityQueue {
         else return self._heap.length - 1;
     }
 
-    function _compare(Queue storage self, uint256 a, uint256 b) internal view returns (bool) {
-        if (self._orientation == Orientation.Minimum) {
-            if (a < b) return true;
-            else return false;
-        } else if (self._orientation == Orientation.Maximum) {
-            if (a > b) return true;
-            else return false;
-        } else {
-            revert NotInitialized();
-        }
-    }
-
-    // Internal functions
-
-    function _initializedCheck(Queue storage self) internal view {
-        if (_isInitialized(self) == false) {
-            revert NotInitialized();
-        }
+    function _compare(uint256 a, uint256 b) internal pure returns (bool) {
+        if (a < b) return true;
+        else return false;
     }
 
     function _swim(Queue storage self, uint256 heapIndex) internal {
@@ -138,7 +95,7 @@ library PriorityQueue {
         // Perform swim on modifiedHeapContents
         {
             uint256 j;
-            while (j + 1 < maxHeapIndexCount && _compare(self, modifiedHeapContents[j + 1], modifiedHeapContents[j]) == false) {
+            while (j + 1 < maxHeapIndexCount && _compare(modifiedHeapContents[j + 1], modifiedHeapContents[j]) == false) {
                 // Does this work to swap the in-memory array indexes?
                 (modifiedHeapContents[j + 1], modifiedHeapContents[j]) = (modifiedHeapContents[j], modifiedHeapContents[j + 1]);
                 unchecked{++j;}
@@ -187,14 +144,14 @@ library PriorityQueue {
                 if (k < heapSize) {
                     uint256 heap_kPlus1 = self._heap[k + 1]; // SLOAD 2
                     // If left child < right child, choose left child
-                    if (_compare(self, heap_k, heap_kPlus1) == false) {
+                    if (_compare(heap_k, heap_kPlus1) == false) {
                         unchecked{++k;}
                         heap_k = heap_kPlus1;
                     }
                 }
 
                 // If current_node <= _child, no need to swim further.
-                if (_compare(self, modifiedHeapContents[0], heap_k) == true) {
+                if (_compare(modifiedHeapContents[0], heap_k) == true) {
                     break;
                 }
     
@@ -211,7 +168,7 @@ library PriorityQueue {
         // Perform sink on modifiedHeapContents
         {
             uint256 j;
-            while (j + 1 < maxHeapIndexCount && modifiedHeapContents[j + 1] != 0 && _compare(self, modifiedHeapContents[j + 1], modifiedHeapContents[j]) == true) {
+            while (j + 1 < maxHeapIndexCount && modifiedHeapContents[j + 1] != 0 && _compare(modifiedHeapContents[j + 1], modifiedHeapContents[j]) == true) {
                 // Does this work to swap the in-memory array indexes?
                 (modifiedHeapContents[j + 1], modifiedHeapContents[j]) = (modifiedHeapContents[j], modifiedHeapContents[j + 1]);
                 unchecked{++j;}
@@ -223,6 +180,12 @@ library PriorityQueue {
             if (originalHeapContents[i] != modifiedHeapContents[i]) {
                 self._heap[heapIndexes[i]] = modifiedHeapContents[i]; // SSTORE here
             }
+        }
+    }
+
+    function _checkInitialize(Queue storage self) internal {
+        if (self._heap.length == 0) {
+            self._heap.push(0);
         }
     }
 

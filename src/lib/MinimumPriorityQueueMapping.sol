@@ -1,113 +1,62 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-library PriorityQueue {
+import "forge-std/console.sol";
+
+library MinimumPriorityQueueMapping {
     error EmptyPriorityQueue();
     error CannotInsert0();
-    error NotInitialized();
-    error DidNotProvideOrientation();
-    error AlreadyInitialized();
-
-    enum Orientation {
-        NotInitialized,
-        Minimum,
-        Maximum
-    }
 
     struct Queue {
-        Orientation _orientation;
-        uint256[] _heap;
-    }
-
-    function initialize(Queue storage self, Orientation orientation_) internal {
-        if (_isInitialized(self) == true) {
-            revert AlreadyInitialized();
-        }
-
-        if (orientation_ == Orientation.NotInitialized) {
-                revert DidNotProvideOrientation();
-        }
-
-        self._heap.push(0);
-        self._orientation = orientation_;
+        uint256 _size;
+        mapping(uint256 => uint256) _heap;
     }
 
     // External view functions
     function size(Queue storage self) internal view returns (uint256) {
-        return _size(self);
+        return self._size;
     }
 
     function heap(Queue storage self) internal view returns (uint256[] memory) {
-        return self._heap;
+        uint256[] memory heapIndexes = new uint[](self._size);
+        for (uint256 i; i < self._size;) {
+            heapIndexes[i] = self._heap[i + 1];
+            unchecked{++i;}
+        }
+        return heapIndexes;
     }    
 
     function isEmpty(Queue storage self) internal view returns (bool) {
-        return _isEmpty(self);
+        return self._size == 0;
     }
 
     function minimum(Queue storage self) internal view returns (uint256) {
-        if (_isEmpty(self)) revert EmptyPriorityQueue();
+        if (isEmpty(self)) revert EmptyPriorityQueue();
         return self._heap[1];
-    }
-
-    function orientation(Queue storage self) internal view returns (Orientation) {
-        return self._orientation;
     }
 
     // External mutator functions
     function insert(Queue storage self, uint256 _key) internal {
         if (_key == 0) revert CannotInsert0();
-        self._heap.push(_key);
-        _swim(self, _size(self));
+        uint256 newSize = ++self._size;
+        self._heap[newSize] = _key;
+        _swim(self, newSize);
     }
 
     function deleteMinimum(Queue storage self) internal returns(uint256 min) {
-        if (_isEmpty(self)) revert EmptyPriorityQueue();
+        if (isEmpty(self)) revert EmptyPriorityQueue();
         // Is this copy by value into memory, or by reference from storage
         min = self._heap[1];
-        self._heap[1] = self._heap[_size(self)];
-        self._heap.pop();
-        if (_isEmpty(self)) return min;
+        uint256 newSize = --self._size;
+        self._heap[1] = self._heap[newSize + 1];
+        self._heap[newSize + 1] = 0;
+        if (newSize == 0) return min;
         _sink(self, 1);
     }
 
-    // Internal view functions
+    // Internal utility functions
 
-    function _isInitialized(Queue storage self) internal view returns (bool) {
-        return self._orientation != Orientation.NotInitialized;
-    }
-
-    function _isEmpty(Queue storage self) internal view returns (bool) {
-        return _size(self) == 0;
-    }
-
-    function _size(Queue storage self) internal view returns (uint256) {
-        uint256 length = self._heap.length;
-        if (length == 0) return 0;
-        else return self._heap.length - 1;
-    }
-
-    function _compare(Queue storage self, uint256 a, uint256 b) internal view returns (bool) {
-        if (self._orientation == Orientation.Minimum) {
-            if (a < b) return true;
-            else return false;
-        } else if (self._orientation == Orientation.Maximum) {
-            if (a > b) return true;
-            else return false;
-        } else {
-            revert NotInitialized();
-        }
-    }
-
-    // Internal functions
-
-    function _initializedCheck(Queue storage self) internal view {
-        if (_isInitialized(self) == false) {
-            revert NotInitialized();
-        }
-    }
-
-    function _swim(Queue storage self, uint256 heapIndex) internal {
+    function _swim(Queue storage self, uint256 heapIndex) private {
         // Perform operations in memory (cheaper) before saving result in storage. Perform minimum operations in storage.
 
         // Obtain max # of heap indexes we will interact with in _swim operation
@@ -138,7 +87,7 @@ library PriorityQueue {
         // Perform swim on modifiedHeapContents
         {
             uint256 j;
-            while (j + 1 < maxHeapIndexCount && _compare(self, modifiedHeapContents[j + 1], modifiedHeapContents[j]) == false) {
+            while (j + 1 < maxHeapIndexCount && _compare(modifiedHeapContents[j + 1], modifiedHeapContents[j]) == false) {
                 // Does this work to swap the in-memory array indexes?
                 (modifiedHeapContents[j + 1], modifiedHeapContents[j]) = (modifiedHeapContents[j], modifiedHeapContents[j + 1]);
                 unchecked{++j;}
@@ -146,17 +95,18 @@ library PriorityQueue {
         }
 
         // Copy in-memory modifiedHeapContents back into in-storage _heap. In theory we should be able to halve the number of SSTOREs with this _swim implementation.
-        for (uint256 i = 0; i < maxHeapIndexCount; i++) {
+        for (uint256 i = 0; i < maxHeapIndexCount;) {
             if (originalHeapContents[i] != modifiedHeapContents[i]) {
                 self._heap[heapIndexes[i]] = modifiedHeapContents[i]; // SSTORE here
             }
+            unchecked{++i;}
         }
     }
 
-    function _sink(Queue storage self, uint256 heapIndex) internal {
+    function _sink(Queue storage self, uint256 heapIndex) private {
         // Obtain max # of heap indexes we will interact with in _swim operation
         uint256 maxHeapIndexCount = 1;
-        uint256 heapSize = _size(self); // Save _size to memory, to minimize SLOAD for _size
+        uint256 heapSize = size(self); // Save _size to memory, to minimize SLOAD for _size
 
         {
             uint256 i = heapIndex;
@@ -187,14 +137,14 @@ library PriorityQueue {
                 if (k < heapSize) {
                     uint256 heap_kPlus1 = self._heap[k + 1]; // SLOAD 2
                     // If left child < right child, choose left child
-                    if (_compare(self, heap_k, heap_kPlus1) == false) {
+                    if (_compare(heap_k, heap_kPlus1) == false) {
                         unchecked{++k;}
                         heap_k = heap_kPlus1;
                     }
                 }
 
                 // If current_node <= _child, no need to swim further.
-                if (_compare(self, modifiedHeapContents[0], heap_k) == true) {
+                if (_compare(modifiedHeapContents[0], heap_k) == true) {
                     break;
                 }
     
@@ -211,7 +161,7 @@ library PriorityQueue {
         // Perform sink on modifiedHeapContents
         {
             uint256 j;
-            while (j + 1 < maxHeapIndexCount && modifiedHeapContents[j + 1] != 0 && _compare(self, modifiedHeapContents[j + 1], modifiedHeapContents[j]) == true) {
+            while (j + 1 < maxHeapIndexCount && modifiedHeapContents[j + 1] != 0 && _compare(modifiedHeapContents[j + 1], modifiedHeapContents[j]) == true) {
                 // Does this work to swap the in-memory array indexes?
                 (modifiedHeapContents[j + 1], modifiedHeapContents[j]) = (modifiedHeapContents[j], modifiedHeapContents[j + 1]);
                 unchecked{++j;}
@@ -219,11 +169,16 @@ library PriorityQueue {
         }
 
         // Copy in-memory modifiedHeapContents back into in-storage _heap. In theory we should be able to halve the number of SSTOREs with this _sink implementation.
-        for (uint256 i = 0; i < maxHeapIndexCount; i++) {
+        for (uint256 i = 0; i < maxHeapIndexCount;) {
             if (originalHeapContents[i] != modifiedHeapContents[i]) {
                 self._heap[heapIndexes[i]] = modifiedHeapContents[i]; // SSTORE here
             }
+            unchecked{++i;}
         }
     }
 
+    function _compare(uint256 a, uint256 b) internal pure returns (bool) {
+        if (a < b) return true;
+        else return false;
+    }
 }

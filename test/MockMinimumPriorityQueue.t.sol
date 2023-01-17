@@ -3,40 +3,14 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "../src/MinimumPriorityQueue.sol";
-import "../src/IMinimumPriorityQueue.sol";
+import "../src/mocks/MockMinimumPriorityQueue.sol";
+import "../src/lib/MinimumPriorityQueue.sol";
 
-contract MinimumPriorityQueueTest is Test {
-    MinimumPriorityQueue public queue;
+contract MockMinimumPriorityQueueTest is Test {
+    MockMinimumPriorityQueue public queue;
 
     function setUp() public {
-        queue = new MinimumPriorityQueue();
-    }
-
-    /*
-     * UNIT TESTS
-     */
-
-    function testUnit_VariablesAtSetUp() public {
-        assertEq(queue.isEmpty(), true);
-        assertEq(queue.size(), 0);
-    }
-
-    function testUnit_insert_SingleInsert() public {
-        queue.insert(1);
-        assertEq(queue.isEmpty(), false);
-        assertEq(queue.size(), 1);
-        assertEq(queue.minimum(), 1);
-    }
-
-    function testUnit_deleteMinimum_ShouldRevertWhenHeapEmpty() public {
-        vm.expectRevert(IMinimumPriorityQueue.EmptyPriorityQueue.selector);
-        queue.deleteMinimum();
-    }
-
-    function testUnit_minimum_ShouldRevertWhenHeapEmpty() public {
-        vm.expectRevert(IMinimumPriorityQueue.EmptyPriorityQueue.selector);
-        queue.minimum();
+        queue = new MockMinimumPriorityQueue();
     }
 
     /*
@@ -51,7 +25,7 @@ contract MinimumPriorityQueueTest is Test {
         assertEq(queue.deleteMinimum(), 1);
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(IMinimumPriorityQueue.EmptyPriorityQueue.selector);
+        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
         queue.minimum();
     }
 
@@ -74,7 +48,7 @@ contract MinimumPriorityQueueTest is Test {
 
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(IMinimumPriorityQueue.EmptyPriorityQueue.selector);
+        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
         queue.minimum();
     }
 
@@ -117,7 +91,7 @@ contract MinimumPriorityQueueTest is Test {
         
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(IMinimumPriorityQueue.EmptyPriorityQueue.selector);
+        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
         queue.minimum();
 
         assertEq(min1 <= min2, true);

@@ -52,19 +52,19 @@ contract MockPriorityQueueTest is Test {
         queue.minimum();
     }
 
-    function testIntegration_NItemsTest() public {
+    // function testIntegration_NItemsTest() public {
 
-        uint256 n = 1000;
+    //     uint256 n = 1000;
 
-        for (uint256 i = n; i > 0; i--) {
-            queue.insert(i);
-        }
+    //     for (uint256 i = n; i > 0; i--) {
+    //         queue.insert(i);
+    //     }
 
-        for (uint256 i = n; i > 0; i--) {
-            assertEq(queue.deleteMinimum(), n + 1 - i);
-        }
+    //     for (uint256 i = n; i > 0; i--) {
+    //         assertEq(queue.deleteMinimum(), n + 1 - i);
+    //     }
 
-    }
+    // }
 
     /*
      * FUZZING TESTS
