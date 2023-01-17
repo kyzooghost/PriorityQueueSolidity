@@ -18,12 +18,16 @@ Profiled with `forge test -vvvv`
 
 | n (number of items in queue) | `insert` gas cost | `deleteMinimum`  \  `deleteMaximum` gas cost |
 |------------------------------|-------------------|----------------------------------------------|
-| 1                            | 26165             | 2398                                         |
-| 10                           | 29695             | 6893                                         |
-| 100                          | 34991             | 12829                                        |
-| 1000                         | 40287             | 18784                                        |
-| 10000                        | 47349             | 26677                                        |
-| 100000                       | 52646             | 32614                                        |
+| 1                            | 26239             | 1208                                         |
+| 10                           | 29769             | 6893                                         |
+| 100                          | 35065             | 12829                                        |
+| 1000                         | 40361             | 18784                                        |
+| 10000                        | 47423             | 26677                                        |
+| 100000                       | 52720             | 32614                                        |
+
+## Caveats
+
+`insert` when n = 0 involves ~20000 gas initialization cost due to SSTORE operation on a cold storage slot of value 0.
 
 ## To-do
 

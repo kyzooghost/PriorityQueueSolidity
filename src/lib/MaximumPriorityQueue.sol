@@ -38,8 +38,7 @@ library MaximumPriorityQueue {
     // External mutator functions
     function insert(PriorityQueue storage self, uint256 _key) internal {
         if (_key == 0) revert CannotInsert0();
-        unchecked{++self._size;}
-        uint256 newSize = self._size;
+        uint256 newSize = ++self._size;
         self._heap[newSize] = _key;
         _swim(self, newSize);
     }
