@@ -1,24 +1,23 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-library MinimumPriorityQueue {
+library MinimumPriorityQueue_Uint40 {
     error EmptyPriorityQueue();
     error CannotInsert0();
 
     struct PriorityQueue {
-        uint256 _size;
-        // TODO - Determine gas saving for dynamic array for packable value type (i.e. uint40 for time)
-        mapping(uint256 => uint256) _heap;
+        uint40[] _heap;
     }
 
     // External view functions
     function size(PriorityQueue storage self) internal view returns (uint256) {
-        return self._size;
+        if (self._heap.length == 0) return 0;
+        else return self._heap.length - 1;
     }
 
-    function heap(PriorityQueue storage self) internal view returns (uint256[] memory) {
+    function heap(PriorityQueue storage self) internal view returns (uint40[] memory) {
         uint256 currentSize = size(self);
-        uint256[] memory heapIndexes = new uint[](currentSize);
+        uint40[] memory heapIndexes = new uint40[](currentSize);
         for (uint256 i; i < currentSize;) {
             heapIndexes[i] = self._heap[i + 1];
             unchecked{++i;}
@@ -27,30 +26,28 @@ library MinimumPriorityQueue {
     }    
 
     function isEmpty(PriorityQueue storage self) internal view returns (bool) {
-        return self._size == 0;
+        return self._heap.length == 0 || self._heap.length == 1;
     }
 
-    function minimum(PriorityQueue storage self) internal view returns (uint256) {
+    function minimum(PriorityQueue storage self) internal view returns (uint40) {
         if (isEmpty(self)) revert EmptyPriorityQueue();
         return self._heap[1];
     }
 
     // External mutator functions
-    function insert(PriorityQueue storage self, uint256 _key) internal {
+    function insert(PriorityQueue storage self, uint40 _key) internal {
         if (_key == 0) revert CannotInsert0();
-        uint256 newSize = ++self._size;
-        self._heap[newSize] = _key;
-        _swim(self, newSize);
+        if (self._heap.length == 0) self._heap.push(0); 
+        self._heap.push(_key);
+        _swim(self, self._heap.length - 1);
     }
 
-    function deleteMinimum(PriorityQueue storage self) internal returns(uint256 min) {
+    function deleteMinimum(PriorityQueue storage self) internal returns(uint40 min) {
         if (isEmpty(self)) revert EmptyPriorityQueue();
         min = self._heap[1];
-        unchecked{--self._size;}
-        uint256 newSize = self._size;
-        self._heap[1] = self._heap[newSize + 1];
-        self._heap[newSize + 1] = 0;
-        if (newSize == 0) return min;
+        self._heap[1] = self._heap[self._heap.length - 1];
+        self._heap.pop();
+        if (isEmpty(self)) return min;
         _sink(self, 1);
     }
 
@@ -71,8 +68,8 @@ library MinimumPriorityQueue {
         }
         // Obtain relevant heap indexes
         uint256[] memory heapIndexes = new uint[](maxHeapIndexCount);
-        uint256[] memory originalHeapContents = new uint[](maxHeapIndexCount);
-        uint256[] memory modifiedHeapContents = new uint[](maxHeapIndexCount);
+        uint40[] memory originalHeapContents = new uint40[](maxHeapIndexCount);
+        uint40[] memory modifiedHeapContents = new uint40[](maxHeapIndexCount);
 
         {
             uint256 i = heapIndex;
@@ -119,8 +116,8 @@ library MinimumPriorityQueue {
 
         // Obtain relevant heap indexes
         uint256[] memory heapIndexes = new uint[](maxHeapIndexCount);
-        uint256[] memory originalHeapContents = new uint[](maxHeapIndexCount);
-        uint256[] memory modifiedHeapContents = new uint[](maxHeapIndexCount);
+        uint40[] memory originalHeapContents = new uint40[](maxHeapIndexCount);
+        uint40[] memory modifiedHeapContents = new uint40[](maxHeapIndexCount);
 
         {
             uint256 i = heapIndex;
@@ -132,11 +129,11 @@ library MinimumPriorityQueue {
 
             while (i << 1 <= heapSize) {
                 uint256 k = i << 1;
-                uint256 heap_k = self._heap[k]; // SLOAD 1
+                uint40 heap_k = self._heap[k]; // SLOAD 1
                 
                 // If right child exists
                 if (k < heapSize) {
-                    uint256 heap_kPlus1 = self._heap[k + 1]; // SLOAD 2
+                    uint40 heap_kPlus1 = self._heap[k + 1]; // SLOAD 2
                     // If left child < right child, choose left child
                     if (_compare(heap_k, heap_kPlus1) == false) {
                         unchecked{++k;}
@@ -178,7 +175,7 @@ library MinimumPriorityQueue {
         }
     }
 
-    function _compare(uint256 a, uint256 b) private pure returns (bool) {
+    function _compare(uint40 a, uint40 b) private pure returns (bool) {
         if (a < b) return true;
         else return false;
     }

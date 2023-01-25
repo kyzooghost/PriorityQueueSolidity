@@ -3,14 +3,14 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "../src/mocks/MockMinimumPriorityQueue.sol";
-import "../src/lib/MinimumPriorityQueue.sol";
+import "../src/mocks/MockMinimumPriorityQueue_Uint40.sol";
+import "../src/lib/MinimumPriorityQueue_Uint40.sol";
 
-contract MockMinimumPriorityQueueTest is Test {
-    MockMinimumPriorityQueue public queue;
+contract MockMinimumPriorityQueue_Uint40Test is Test {
+    MockMinimumPriorityQueue_Uint40 public queue;
 
     function setUp() public {
-        queue = new MockMinimumPriorityQueue();
+        queue = new MockMinimumPriorityQueue_Uint40();
     }
 
     /*
@@ -30,12 +30,12 @@ contract MockMinimumPriorityQueueTest is Test {
     }
 
     function testUnit_deleteMinimum_ShouldRevertWhenHeapEmpty() public {
-        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
+        vm.expectRevert(MinimumPriorityQueue_Uint40.EmptyPriorityQueue.selector);
         queue.deleteMinimum();
     }
 
     function testUnit_minimum_ShouldRevertWhenHeapEmpty() public {
-        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
+        vm.expectRevert(MinimumPriorityQueue_Uint40.EmptyPriorityQueue.selector);
         queue.minimum();
     }
 
@@ -51,7 +51,7 @@ contract MockMinimumPriorityQueueTest is Test {
         assertEq(queue.deleteMinimum(), 1);
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
+        vm.expectRevert(MinimumPriorityQueue_Uint40.EmptyPriorityQueue.selector);
         queue.minimum();
     }
 
@@ -74,29 +74,27 @@ contract MockMinimumPriorityQueueTest is Test {
 
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
+        vm.expectRevert(MinimumPriorityQueue_Uint40.EmptyPriorityQueue.selector);
         queue.minimum();
     }
 
     function testIntegration_NItemsTest() public {
+        uint40 n = 180;
 
-        uint256 n = 180;
-
-        for (uint256 i = n; i > 0; i--) {
+        for (uint40 i = n; i > 0; i--) {
             queue.insert(i);
         }
 
-        for (uint256 i = n; i > 0; i--) {
+        for (uint40 i = n; i > 0; i--) {
             assertEq(queue.deleteMinimum(), n + 1 - i);
         }
-
     }
 
     /*
      * FUZZING TESTS
      */
 
-    function testFuzz_InsertAndDeleteFiveNumbers(uint256 a, uint256 b, uint256 c, uint256 d, uint256 e) public {
+    function testFuzz_InsertAndDeleteFiveNumbers(uint40 a, uint40 b, uint40 c, uint40 d, uint40 e) public {
         vm.assume(a > 0 && b > 0 && c > 0 && d > 0 && e > 0);
         vm.assume(e > d && d > c && c > b && b > a);
 
@@ -117,7 +115,7 @@ contract MockMinimumPriorityQueueTest is Test {
         
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
+        vm.expectRevert(MinimumPriorityQueue_Uint40.EmptyPriorityQueue.selector);
         queue.minimum();
 
         assertEq(min1 <= min2, true);
