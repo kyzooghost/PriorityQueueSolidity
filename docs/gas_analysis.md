@@ -37,6 +37,8 @@ Profiled with `forge test -vvvv`
 | 10000                        | 69702             | 27282                    |
 | 100000                       | 74999             | 32907                    |
 
+We expect ~20000 increased gas cost for insert() operation due to one additional SSTORE - we store an address in MinimumPriorityQueueWithLinkedAddress.insert(), which we do not with MinimumPriorityQueue.insert()
+
 ## Gas results for MinimumPriorityQueue_Uint40 vs MinimumPriorityQueue library
 
 Profiled with `forge test -vvvv`
