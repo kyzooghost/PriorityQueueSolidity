@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-library MinimumPriorityQueue {
+library MinimumPriorityQueueWithLinkedAddress {
     error EmptyPriorityQueue();
     error CannotInsert0();
 
     struct PriorityQueue {
         uint256 _size;
         mapping(uint256 => uint256) _heap;
+        mapping(uint256 => address) _linked_address;
     }
 
     // External view functions
@@ -23,23 +24,36 @@ library MinimumPriorityQueue {
             unchecked{++i;}
         }
         return heapIndexes;
-    }    
+    }
+
+    function addresses(PriorityQueue storage self) internal view returns (address[] memory) {
+        uint256 currentSize = size(self);
+        address[] memory addresses_array = new address[](currentSize);
+        for (uint256 i; i < currentSize;) {
+            uint256 heapIndex = self._heap[i + 1];
+            addresses_array[i] = self._linked_address[heapIndex];
+            unchecked{++i;}
+        }
+        return addresses_array;
+    }
 
     function isEmpty(PriorityQueue storage self) internal view returns (bool) {
         return self._size == 0;
     }
 
-    function minimum(PriorityQueue storage self) internal view returns (uint256) {
+    function minimum(PriorityQueue storage self) internal view returns (uint256, address) {
         if (isEmpty(self)) revert EmptyPriorityQueue();
-        return self._heap[1];
+        uint256 min_key = self._heap[1];
+        return (min_key, self._linked_address[min_key]);
     }
 
     // External mutator functions
-    function insert(PriorityQueue storage self, uint256 _key) internal {
+    function insert(PriorityQueue storage self, uint256 _key, address _address) internal {
         if (_key == 0) revert CannotInsert0();
         uint256 newSize = ++self._size;
         self._heap[newSize] = _key;
         _swim(self, newSize);
+        self._linked_address[_key] = _address;
     }
 
     function deleteMinimum(PriorityQueue storage self) internal returns(uint256 min) {
@@ -49,8 +63,31 @@ library MinimumPriorityQueue {
         uint256 newSize = self._size;
         self._heap[1] = self._heap[newSize + 1];
         self._heap[newSize + 1] = 0;
+        delete self._linked_address[min];
         if (newSize == 0) return min;
         _sink(self, 1);
+    }
+
+    // Deletes key from _address_of mapping, BUT not the heap => This leaves a 'phantom' key in the heap with no linked address.
+    // We do not delete key from the heap here because it requires finding the key in the heap, and we do not want to perform an O(N lg N) sort and search procedure in Solidity to find the key.
+    // Return true if deleted a key, return false if did not delete anything.
+    function deleteKey(PriorityQueue storage self, uint256 _key) internal returns (bool result) {
+        address linked_address_to_delete = self._linked_address[_key];
+        delete self._linked_address[_key];
+        return linked_address_to_delete != address(0);
+    }
+
+    // Because deleteKey() exists, minimum() can potentially return a phantom key and zero address. To return a non-phantom key with a real linked address, we must deleteMinimum() for any phantom key we find
+    function ensureNonPhantomMinimum(PriorityQueue storage self) internal {
+        if (isEmpty(self)) revert EmptyPriorityQueue();
+        uint256 min = self._heap[1];
+        address min_address = self._linked_address[min];
+        while (min_address == address(0)) {
+            deleteMinimum(self);
+            if (self._size == 0) return;
+            min = self._heap[1];
+            min_address = self._linked_address[min];
+        }
     }
 
     // Internal utility functions
