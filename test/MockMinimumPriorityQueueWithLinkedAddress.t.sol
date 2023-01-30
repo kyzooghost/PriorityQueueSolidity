@@ -41,9 +41,8 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
         queue.minimum();
     }
 
-    function testUnit_ensureNonPhantomMinimum_ShouldRevertWhenHeapEmpty() public {
-        vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.ensureNonPhantomMinimum();
+    function testUnit_ensureNonPhantomMinimum_ShouldReturnTrueWhenHeapEmpty() public {
+        assertEq(queue.ensureNonPhantomMinimum(), true);
     }
 
     /*
@@ -139,7 +138,7 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
         queue.minimum();
     }
 
-    function testIntegration_InsertFiveNumbersAndDeleteTwoKeys() public {
+    function testIntegration_InsertFiveNumbersAndDeleteFirstTwoKeys() public {
         queue.insert(5, address(5));
         queue.insert(3, address(3));
         queue.insert(2, address(2));
@@ -188,7 +187,7 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
             assertEq(min_address, address(0));
         }
 
-        queue.ensureNonPhantomMinimum();
+        assertEq(queue.ensureNonPhantomMinimum(), false);
         assertEq(queue.isEmpty(), false);
         assertEq(queue.size(), 3);
         {
@@ -197,19 +196,96 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
             assertEq(min_address, address(3));
         }
 
-        queue.ensureNonPhantomMinimum();
+        assertEq(queue.ensureNonPhantomMinimum(), false);
         assertEq(queue.deleteMinimum(), 3);
-        queue.ensureNonPhantomMinimum();
+        assertEq(queue.ensureNonPhantomMinimum(), false);
         assertEq(queue.deleteMinimum(), 4);
-        queue.ensureNonPhantomMinimum();
+        assertEq(queue.ensureNonPhantomMinimum(), false);
         assertEq(queue.deleteMinimum(), 5);
 
+        assertEq(queue.ensureNonPhantomMinimum(), true);
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
         vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
         queue.minimum();
         vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.ensureNonPhantomMinimum();
+        queue.deleteMinimum();
+    }
+
+    function testIntegration_InsertFiveNumbersAndDeleteLastTwoKeys() public {
+        queue.insert(5, address(5));
+        queue.insert(3, address(3));
+        queue.insert(2, address(2));
+        queue.insert(1, address(1));
+        queue.insert(4, address(4));
+
+        assertEq(queue.isEmpty(), false);
+        assertEq(queue.size(), 5);
+        {
+            (uint256 min, address min_address) = queue.minimum();
+            assertEq(min, 1);
+            assertEq(min_address, address(1));
+        }
+
+        uint[] memory heap_keys = new uint[](queue.size());
+        address[] memory addresses_in_key = new address[](queue.size());
+        heap_keys = queue.heap();
+
+        for (uint i; i < queue.size(); i++) {
+            addresses_in_key[i] = queue.addresses()[i];
+            assertEq(addresses_in_key[i], address(uint160(heap_keys[i])));
+        }
+
+        // Delete two keys - 1 and 3
+
+        assertEq(queue.deleteKey(4), true);
+        assertEq(queue.deleteKey(5), true);
+        assertEq(queue.deleteKey(5), false);
+        assertEq(queue.isEmpty(), false);
+        assertEq(queue.size(), 5);
+
+        for (uint i; i < queue.size(); i++) {
+            addresses_in_key[i] = queue.addresses()[i];
+            uint256 heap_key = heap_keys[i];
+
+            if (heap_key == 4 || heap_key == 5) {
+                assertEq(addresses_in_key[i], address(0));
+            } else {
+                assertEq(addresses_in_key[i], address(uint160(heap_keys[i])));
+            }
+        }
+
+        {
+            (uint256 min, address min_address) = queue.minimum();
+            assertEq(min, 1);
+            assertEq(min_address, address(1));
+        }
+
+        assertEq(queue.ensureNonPhantomMinimum(), false);
+        assertEq(queue.isEmpty(), false);
+        assertEq(queue.size(), 5);
+        {
+            (uint256 min, address min_address) = queue.minimum();
+            assertEq(min, 1);
+            assertEq(min_address, address(1));
+        }
+
+        assertEq(queue.ensureNonPhantomMinimum(), false);
+        assertEq(queue.deleteMinimum(), 1);
+        assertEq(queue.ensureNonPhantomMinimum(), false);
+        assertEq(queue.deleteMinimum(), 2);
+        assertEq(queue.ensureNonPhantomMinimum(), false);
+        assertEq(queue.deleteMinimum(), 3);
+
+        assertEq(queue.isEmpty(), false);
+        assertEq(queue.size(), 2);
+
+        assertEq(queue.ensureNonPhantomMinimum(), true);
+        assertEq(queue.isEmpty(), true);
+        assertEq(queue.size(), 0);
+
+        vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
+        queue.minimum();
         vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
         queue.deleteMinimum();
     }

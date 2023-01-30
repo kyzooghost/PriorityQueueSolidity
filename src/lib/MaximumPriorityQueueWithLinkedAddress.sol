@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-library MinimumPriorityQueueWithLinkedAddress {
+library MaximumPriorityQueueWithLinkedAddress {
     error EmptyPriorityQueue();
     error CannotInsert0();
 
@@ -41,10 +41,10 @@ library MinimumPriorityQueueWithLinkedAddress {
         return self._size == 0;
     }
 
-    function minimum(PriorityQueue storage self) internal view returns (uint256, address) {
+    function maximum(PriorityQueue storage self) internal view returns (uint256, address) {
         if (isEmpty(self)) revert EmptyPriorityQueue();
-        uint256 min_key = self._heap[1];
-        return (min_key, self._linked_address[min_key]);
+        uint256 max_key = self._heap[1];
+        return (max_key, self._linked_address[max_key]);
     }
 
     // External mutator functions
@@ -56,15 +56,15 @@ library MinimumPriorityQueueWithLinkedAddress {
         self._linked_address[_key] = _address;
     }
 
-    function deleteMinimum(PriorityQueue storage self) internal returns(uint256 min) {
+    function deleteMaximum(PriorityQueue storage self) internal returns(uint256 max) {
         if (isEmpty(self)) revert EmptyPriorityQueue();
-        min = self._heap[1];
+        max = self._heap[1];
         unchecked{--self._size;}
         uint256 newSize = self._size;
         self._heap[1] = self._heap[newSize + 1];
         self._heap[newSize + 1] = 0;
-        delete self._linked_address[min];
-        if (newSize == 0) return min;
+        delete self._linked_address[max];
+        if (newSize == 0) return max;
         _sink(self, 1);
     }
 
@@ -77,17 +77,17 @@ library MinimumPriorityQueueWithLinkedAddress {
         return linked_address_to_delete != address(0);
     }
 
-    // Because deleteKey() exists, minimum() can potentially return a phantom key and zero address. To return a non-phantom key with a real linked address, we must deleteMinimum() for any phantom key we find
+    // Because deleteKey() exists, maximum() can potentially return a phantom key and zero address. To return a non-phantom key with a real linked address, we must deleteMaximum() for any phantom key we find
     // Returns true if queue empty, false otherwise
-    function ensureNonPhantomMinimum(PriorityQueue storage self) internal returns (bool isQueueEmpty) {
+    function ensureNonPhantomMaximum(PriorityQueue storage self) internal returns (bool isQueueEmpty) {
         if (isEmpty(self)) return true;
-        uint256 min = self._heap[1];
-        address min_address = self._linked_address[min];
-        while (min_address == address(0)) {
-            deleteMinimum(self);
+        uint256 max = self._heap[1];
+        address max_address = self._linked_address[max];
+        while (max_address == address(0)) {
+            deleteMaximum(self);
             if (self._size == 0) return true;
-            min = self._heap[1];
-            min_address = self._linked_address[min];
+            max = self._heap[1];
+            max_address = self._linked_address[max];
         }
         return false;
     }
@@ -217,7 +217,7 @@ library MinimumPriorityQueueWithLinkedAddress {
     }
 
     function _compare(uint256 a, uint256 b) private pure returns (bool) {
-        if (a < b) return true;
+        if (a > b) return true;
         else return false;
     }
 }

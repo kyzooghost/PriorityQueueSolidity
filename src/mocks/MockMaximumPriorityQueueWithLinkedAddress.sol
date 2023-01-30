@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-import "../lib/MinimumPriorityQueueWithLinkedAddress.sol";
+import "../lib/MaximumPriorityQueueWithLinkedAddress.sol";
 
-contract MockMinimumPriorityQueueWithLinkedAddress {
-    using MinimumPriorityQueueWithLinkedAddress for MinimumPriorityQueueWithLinkedAddress.PriorityQueue;
-    MinimumPriorityQueueWithLinkedAddress.PriorityQueue _queue;
+contract MockMaximumPriorityQueueWithLinkedAddress {
+    using MaximumPriorityQueueWithLinkedAddress for MaximumPriorityQueueWithLinkedAddress.PriorityQueue;
+    MaximumPriorityQueueWithLinkedAddress.PriorityQueue _queue;
 
     function insert(uint256 _key, address _address) external {
         _queue.insert(_key, _address);
     }
 
-    function deleteMinimum() external returns(uint256 min) {
-        return _queue.deleteMinimum();
+    function deleteMaximum() external returns(uint256 min) {
+        return _queue.deleteMaximum();
     }
 
-    function ensureNonPhantomMinimum() external returns (bool) {
-        return _queue.ensureNonPhantomMinimum();
+    function ensureNonPhantomMaximum() external returns (bool) {
+        return _queue.ensureNonPhantomMaximum();
     }
 
     function deleteKey(uint256 _key) external returns (bool) {
@@ -39,7 +39,7 @@ contract MockMinimumPriorityQueueWithLinkedAddress {
         return _queue.isEmpty();
     }
 
-    function minimum() external view returns (uint256, address) {
-        return _queue.minimum();
+    function maximum() external view returns (uint256, address) {
+        return _queue.maximum();
     }
 }
