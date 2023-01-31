@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 library MaximumPriorityQueueWithLinkedAddress {
     error EmptyPriorityQueue();
     error CannotInsert0();
+    error DuplicateKey();
 
     struct PriorityQueue {
         uint256 _size;
@@ -50,6 +51,7 @@ library MaximumPriorityQueueWithLinkedAddress {
     // External mutator functions
     function insert(PriorityQueue storage self, uint256 _key, address _address) internal {
         if (_key == 0) revert CannotInsert0();
+        if (self._linked_address[_key] != address(0)) revert DuplicateKey();
         uint256 newSize = ++self._size;
         self._heap[newSize] = _key;
         _swim(self, newSize);

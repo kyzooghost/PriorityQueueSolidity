@@ -311,6 +311,8 @@ contract MockMaximumPriorityQueueWithLinkedAddressTest is Test {
         vm.assume(e < d && d < c && c < b && b < a);
 
         queue.insert(a, address(uint160(a)));
+        vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.DuplicateKey.selector);
+        queue.insert(a, address(0));
         queue.insert(b, address(uint160(b)));
         queue.insert(c, address(uint160(c)));
         queue.insert(d, address(uint160(d)));
