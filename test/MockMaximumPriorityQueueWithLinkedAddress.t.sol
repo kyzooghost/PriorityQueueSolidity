@@ -37,8 +37,9 @@ contract MockMaximumPriorityQueueWithLinkedAddressTest is Test {
     }
 
     function testUnit_maximum_ShouldRevertWhenHeapEmpty() public {
-        vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.maximum();
+        (uint256 max_, address max_address_) = queue.maximum();
+        assertEq(max_, 0);
+        assertEq(max_address_, address(0));
     }
 
     function testUnit_ensureNonPhantomMaximum_ShouldReturnTrueWhenHeapEmpty() public {
@@ -59,8 +60,9 @@ contract MockMaximumPriorityQueueWithLinkedAddressTest is Test {
         assertEq(queue.deleteMaximum(), 1);
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.maximum();
+        (uint256 max_, address max_address_) = queue.maximum();
+        assertEq(max_, 0);
+        assertEq(max_address_, address(0));
     }
 
     function testIntegration_SingleInsertAndDeleteKey() public {
@@ -98,8 +100,9 @@ contract MockMaximumPriorityQueueWithLinkedAddressTest is Test {
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
 
-        vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.maximum();
+        (uint256 max_, address max_address_) = queue.maximum();
+        assertEq(max_, 0);
+        assertEq(max_address_, address(0));
         vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
         queue.deleteMaximum();
     }
@@ -134,8 +137,9 @@ contract MockMaximumPriorityQueueWithLinkedAddressTest is Test {
 
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.maximum();
+        (uint256 max_, address max_address_) = queue.maximum();
+        assertEq(max_, 0);
+        assertEq(max_address_, address(0));
     }
 
     function testIntegration_InsertFiveNumbersAndDeleteFirstTwoKeys() public {
@@ -206,8 +210,9 @@ contract MockMaximumPriorityQueueWithLinkedAddressTest is Test {
         assertEq(queue.ensureNonPhantomMaximum(), true);
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.maximum();
+        (uint256 max_, address max_address_) = queue.maximum();
+        assertEq(max_, 0);
+        assertEq(max_address_, address(0));
         vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
         queue.deleteMaximum();
     }
@@ -284,8 +289,9 @@ contract MockMaximumPriorityQueueWithLinkedAddressTest is Test {
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
 
-        vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.maximum();
+        (uint256 max_, address max_address_) = queue.maximum();
+        assertEq(max_, 0);
+        assertEq(max_address_, address(0));
         vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
         queue.deleteMaximum();
     }
@@ -329,8 +335,9 @@ contract MockMaximumPriorityQueueWithLinkedAddressTest is Test {
         
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MaximumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.maximum();
+        (uint256 max_, address max_address_) = queue.maximum();
+        assertEq(max_, 0);
+        assertEq(max_address_, address(0));
 
         assertEq(max1 >= max2, true);
         assertEq(max2 >= max3, true);

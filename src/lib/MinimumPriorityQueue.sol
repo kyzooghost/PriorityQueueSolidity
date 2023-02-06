@@ -30,7 +30,7 @@ library MinimumPriorityQueue {
     }
 
     function minimum(PriorityQueue storage self) internal view returns (uint256) {
-        if (isEmpty(self)) revert EmptyPriorityQueue();
+        if (isEmpty(self)) return (0);
         return self._heap[1];
     }
 

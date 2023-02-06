@@ -37,8 +37,9 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
     }
 
     function testUnit_minimum_ShouldRevertWhenHeapEmpty() public {
-        vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.minimum();
+        (uint256 min, address min_address) = queue.minimum();
+        assertEq(min, 0);
+        assertEq(min_address, address(0));
     }
 
     function testUnit_ensureNonPhantomMinimum_ShouldReturnTrueWhenHeapEmpty() public {
@@ -59,8 +60,9 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
         assertEq(queue.deleteMinimum(), 1);
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.minimum();
+        (uint256 min_after, address min_address_after) = queue.minimum();
+        assertEq(min_after, 0);
+        assertEq(min_address_after, address(0));
     }
 
     function testIntegration_SingleInsertAndDeleteKey() public {
@@ -98,8 +100,11 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
 
-        vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.minimum();
+        {
+            (uint256 min, address min_address) = queue.minimum();
+            assertEq(min, 0);
+            assertEq(min_address, address(0));
+        }
         vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
         queue.deleteMinimum();
     }
@@ -134,8 +139,11 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
 
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.minimum();
+        {
+            (uint256 min_after, address min_address_after) = queue.minimum();
+            assertEq(min_after, 0);
+            assertEq(min_address_after, address(0));
+        }
     }
 
     function testIntegration_InsertFiveNumbersAndDeleteFirstTwoKeys() public {
@@ -206,8 +214,11 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
         assertEq(queue.ensureNonPhantomMinimum(), true);
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.minimum();
+        {
+            (uint256 min_after, address min_address_after) = queue.minimum();
+            assertEq(min_after, 0);
+            assertEq(min_address_after, address(0));
+        }
         vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
         queue.deleteMinimum();
     }
@@ -284,8 +295,11 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
 
-        vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.minimum();
+        {
+            (uint256 min, address min_address) = queue.minimum();
+            assertEq(min, 0);
+            assertEq(min_address, address(0));
+        }
         vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
         queue.deleteMinimum();
     }
@@ -331,8 +345,11 @@ contract MockMinimumPriorityQueueWithLinkedAddressTest is Test {
         
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MinimumPriorityQueueWithLinkedAddress.EmptyPriorityQueue.selector);
-        queue.minimum();
+        {
+            (uint256 min_after, address min_address_after) = queue.minimum();
+            assertEq(min_after, 0);
+            assertEq(min_address_after, address(0));
+        }
 
         assertEq(min1 <= min2, true);
         assertEq(min2 <= min3, true);

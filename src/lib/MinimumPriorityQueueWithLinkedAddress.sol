@@ -43,7 +43,7 @@ library MinimumPriorityQueueWithLinkedAddress {
     }
 
     function minimum(PriorityQueue storage self) internal view returns (uint256, address) {
-        if (isEmpty(self)) revert EmptyPriorityQueue();
+        if (isEmpty(self)) return (0, address(0));
         uint256 min_key = self._heap[1];
         return (min_key, self._linked_address[min_key]);
     }

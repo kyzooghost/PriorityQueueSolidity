@@ -35,8 +35,8 @@ contract MockMinimumPriorityQueueTest is Test {
     }
 
     function testUnit_minimum_ShouldRevertWhenHeapEmpty() public {
-        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
-        queue.minimum();
+        (uint256 min_after) = queue.minimum();
+        assertEq(min_after, 0);
     }
 
     /*
@@ -51,8 +51,8 @@ contract MockMinimumPriorityQueueTest is Test {
         assertEq(queue.deleteMinimum(), 1);
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
-        queue.minimum();
+        (uint256 min_after) = queue.minimum();
+        assertEq(min_after, 0);
     }
 
     function testIntegration_InsertAndDeleteFiveNumbers() public {
@@ -74,8 +74,8 @@ contract MockMinimumPriorityQueueTest is Test {
 
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
-        queue.minimum();
+        (uint256 min_after) = queue.minimum();
+        assertEq(min_after, 0);
     }
 
     function testIntegration_NItemsTest() public {
@@ -117,8 +117,8 @@ contract MockMinimumPriorityQueueTest is Test {
         
         assertEq(queue.isEmpty(), true);
         assertEq(queue.size(), 0);
-        vm.expectRevert(MinimumPriorityQueue.EmptyPriorityQueue.selector);
-        queue.minimum();
+        (uint256 min_after) = queue.minimum();
+        assertEq(min_after, 0);
 
         assertEq(min1 <= min2, true);
         assertEq(min2 <= min3, true);

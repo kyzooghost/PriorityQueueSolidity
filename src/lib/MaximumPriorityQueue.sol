@@ -31,7 +31,7 @@ library MaximumPriorityQueue {
     }
 
     function maximum(PriorityQueue storage self) internal view returns (uint256) {
-        if (isEmpty(self)) revert EmptyPriorityQueue();
+        if (isEmpty(self)) return (0);
         return self._heap[1];
     }
 

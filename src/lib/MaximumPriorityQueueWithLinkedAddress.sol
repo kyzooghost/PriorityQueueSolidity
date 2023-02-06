@@ -43,7 +43,7 @@ library MaximumPriorityQueueWithLinkedAddress {
     }
 
     function maximum(PriorityQueue storage self) internal view returns (uint256, address) {
-        if (isEmpty(self)) revert EmptyPriorityQueue();
+        if (isEmpty(self)) return (0, address(0));
         uint256 max_key = self._heap[1];
         return (max_key, self._linked_address[max_key]);
     }
