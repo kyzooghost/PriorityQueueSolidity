@@ -1,5 +1,9 @@
 # Solidity implementation for priority queue data structure
 
+## Deprecation Note
+
+This was built in a time when the [OpenZeppelin Heap library](https://docs.openzeppelin.com/contracts/5.x/api/utils#Heap) was not available. Prefer using OpenZeppelin implementation for audited + maintained library.
+
 ## Rationale
 
 Priority queue that supports O(lg N) `insert` and `deleteMinimum` \ `deleteMaximum` operations.
