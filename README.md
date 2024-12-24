@@ -1,4 +1,4 @@
-# Solidity implementation for priority queue data structure
+# DEPRECATED: Solidity implementation for priority queue data structure
 
 ## Deprecation Note
 
